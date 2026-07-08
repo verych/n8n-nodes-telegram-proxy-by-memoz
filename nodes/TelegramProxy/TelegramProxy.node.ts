@@ -37,7 +37,7 @@ export class TelegramProxy implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'telegramProxyApi',
+				name: 'telegramApi',
 				required: true,
 			},
 		],
@@ -2466,7 +2466,7 @@ export class TelegramProxy implements INodeType {
 					if (this.getNodeParameter('download', i, false)) {
 						const filePath = responseData.result.file_path;
 
-						const credentials = await this.getCredentials('telegramProxyApi');
+						const credentials = await this.getCredentials('telegramApi');
 						const file = await apiRequest.call(
 							this,
 							'GET',

@@ -29,7 +29,7 @@ export class TelegramProxyTrigger implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'telegramProxyApi',
+				name: 'telegramApi',
 				required: true,
 			},
 		],
@@ -268,7 +268,7 @@ export class TelegramProxyTrigger implements INodeType {
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const credentials = await this.getCredentials('telegramProxyApi');
+		const credentials = await this.getCredentials('telegramApi');
 
 		const bodyData = this.getBodyData() as IEvent;
 		const headerData = this.getHeaderData();

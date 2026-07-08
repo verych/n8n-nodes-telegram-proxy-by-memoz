@@ -27,12 +27,10 @@ npm install n8n-nodes-telegram-proxy-by-memoz
 
 ## Credentials
 
-Create a **Telegram API (Proxy)** credential:
+These nodes reuse n8n's built-in **Telegram API** credential type — the same one the stock Telegram/Telegram Trigger nodes use. If you already have a Telegram credential set up, just pick it; no need to create a new one.
 
 - **Access Token** — get one from [@BotFather](https://telegram.me/botfather)
 - **Base URL** — defaults to `https://api.telegram.org`
-
-This is a separate credential type from the built-in `Telegram API`, so it won't conflict with existing Telegram credentials/nodes in your instance.
 
 ## Nodes
 

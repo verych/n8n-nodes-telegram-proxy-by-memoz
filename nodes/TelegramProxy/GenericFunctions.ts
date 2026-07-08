@@ -209,7 +209,7 @@ export async function apiRequest(
 	query?: IDataObject,
 	option: IDataObject = {},
 ): Promise<any> {
-	const credentials = await this.getCredentials('telegramProxyApi');
+	const credentials = await this.getCredentials('telegramApi');
 
 	query = query || {};
 
