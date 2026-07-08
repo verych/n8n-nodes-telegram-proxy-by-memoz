@@ -19,8 +19,7 @@ export class TelegramProxyTrigger implements INodeType {
 		name: 'telegramProxyTrigger',
 		icon: 'file:telegram.svg',
 		group: ['trigger'],
-		version: [1, 1.1, 1.2, 1.3, 1.4],
-		defaultVersion: 1.4,
+		version: 1,
 		subtitle: '=Updates: {{$parameter["updates"].join(", ")}}',
 		description: 'Starts the workflow on a Telegram update, with support for an HTTP/HTTPS proxy',
 		defaults: {
@@ -176,11 +175,6 @@ export class TelegramProxyTrigger implements INodeType {
 						default: '',
 						description:
 							'The chat IDs to restrict the trigger to. Multiple can be defined separated by comma.',
-						displayOptions: {
-							show: {
-								'@version': [{ _cnd: { gte: 1.1 } }],
-							},
-						},
 					},
 					{
 						displayName: 'Restrict to User IDs',
@@ -189,11 +183,6 @@ export class TelegramProxyTrigger implements INodeType {
 						default: '',
 						description:
 							'The user IDs to restrict the trigger to. Multiple can be defined separated by comma.',
-						displayOptions: {
-							show: {
-								'@version': [{ _cnd: { gte: 1.1 } }],
-							},
-						},
 					},
 					{
 						displayName: 'Proxy',
@@ -243,7 +232,7 @@ export class TelegramProxyTrigger implements INodeType {
 
 				const secret_token = getSecretToken.call(this);
 
-				const drop_pending_updates = this.getNode().typeVersion >= 1.3;
+				const drop_pending_updates = true;
 
 				const body = {
 					url: webhookUrl,
@@ -284,23 +273,20 @@ export class TelegramProxyTrigger implements INodeType {
 		const bodyData = this.getBodyData() as IEvent;
 		const headerData = this.getHeaderData();
 
-		const nodeVersion = this.getNode().typeVersion;
-		if (nodeVersion > 1) {
-			const secret = getSecretToken.call(this);
-			const secretBuffer = Buffer.from(secret);
-			const headerSecretBuffer = Buffer.from(
-				String(headerData['x-telegram-bot-api-secret-token'] ?? ''),
-			);
-			if (
-				secretBuffer.byteLength !== headerSecretBuffer.byteLength ||
-				!crypto.timingSafeEqual(secretBuffer, headerSecretBuffer)
-			) {
-				const res = this.getResponseObject();
-				res.status(403).json({ message: 'Provided secret is not valid' });
-				return {
-					noWebhookResponse: true,
-				};
-			}
+		const secret = getSecretToken.call(this);
+		const secretBuffer = Buffer.from(secret);
+		const headerSecretBuffer = Buffer.from(
+			String(headerData['x-telegram-bot-api-secret-token'] ?? ''),
+		);
+		if (
+			secretBuffer.byteLength !== headerSecretBuffer.byteLength ||
+			!crypto.timingSafeEqual(secretBuffer, headerSecretBuffer)
+		) {
+			const res = this.getResponseObject();
+			res.status(403).json({ message: 'Provided secret is not valid' });
+			return {
+				noWebhookResponse: true,
+			};
 		}
 
 		const additionalFields = this.getNodeParameter('additionalFields') as IDataObject;
@@ -311,44 +297,34 @@ export class TelegramProxyTrigger implements INodeType {
 			if (Object.entries(downloadFilesResult).length !== 0) return downloadFilesResult;
 		}
 
-		if (nodeVersion >= 1.2) {
-			if (additionalFields.chatIds) {
-				const chatIds = additionalFields.chatIds as string;
-				const splitIds = chatIds.split(',').map((chatId) => chatId.trim());
-				// Versions < 1.4 only resolve the chat ID from `message` updates; later
-				// versions resolve it from every update type that carries a chat.
-				const chatId =
-					nodeVersion >= 1.4
-						? (bodyData.message?.chat?.id ??
-							bodyData.edited_message?.chat?.id ??
-							bodyData.channel_post?.chat?.id ??
-							bodyData.edited_channel_post?.chat?.id ??
-							bodyData.callback_query?.message?.chat?.id)
-						: bodyData.message?.chat?.id;
-				if (!splitIds.includes(String(chatId))) {
-					return {};
-				}
+		if (additionalFields.chatIds) {
+			const chatIds = additionalFields.chatIds as string;
+			const splitIds = chatIds.split(',').map((chatId) => chatId.trim());
+			const chatId =
+				bodyData.message?.chat?.id ??
+				bodyData.edited_message?.chat?.id ??
+				bodyData.channel_post?.chat?.id ??
+				bodyData.edited_channel_post?.chat?.id ??
+				bodyData.callback_query?.message?.chat?.id;
+			if (!splitIds.includes(String(chatId))) {
+				return {};
 			}
+		}
 
-			if (additionalFields.userIds) {
-				const userIds = additionalFields.userIds as string;
-				const splitIds = userIds.split(',').map((userId) => userId.trim());
-				// Versions < 1.4 only resolve the user ID from `message` updates; later
-				// versions resolve it from every update type that carries a sender.
-				const userId =
-					nodeVersion >= 1.4
-						? (bodyData.message?.from?.id ??
-							bodyData.edited_message?.from?.id ??
-							bodyData.channel_post?.from?.id ??
-							bodyData.edited_channel_post?.from?.id ??
-							bodyData.callback_query?.from?.id ??
-							bodyData.inline_query?.from?.id ??
-							bodyData.pre_checkout_query?.from?.id ??
-							bodyData.shipping_query?.from?.id)
-						: bodyData.message?.from?.id;
-				if (!splitIds.includes(String(userId))) {
-					return {};
-				}
+		if (additionalFields.userIds) {
+			const userIds = additionalFields.userIds as string;
+			const splitIds = userIds.split(',').map((userId) => userId.trim());
+			const userId =
+				bodyData.message?.from?.id ??
+				bodyData.edited_message?.from?.id ??
+				bodyData.channel_post?.from?.id ??
+				bodyData.edited_channel_post?.from?.id ??
+				bodyData.callback_query?.from?.id ??
+				bodyData.inline_query?.from?.id ??
+				bodyData.pre_checkout_query?.from?.id ??
+				bodyData.shipping_query?.from?.id;
+			if (!splitIds.includes(String(userId))) {
+				return {};
 			}
 		}
 

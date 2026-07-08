@@ -74,7 +74,6 @@ export function addAdditionalFields(
 	this: IExecuteFunctions,
 	body: IDataObject,
 	index: number,
-	nodeVersion?: number,
 	instanceId?: string,
 ) {
 	const operation = this.getNodeParameter('operation', index);
@@ -86,7 +85,7 @@ export function addAdditionalFields(
 		const attributionText = 'This message was sent automatically with ';
 		const link = createUtmCampaignLink('n8n-nodes-base.telegram', instanceId);
 
-		if (nodeVersion && nodeVersion >= 1.1 && additionalFields.appendAttribution === undefined) {
+		if (additionalFields.appendAttribution === undefined) {
 			additionalFields.appendAttribution = true;
 		}
 
@@ -109,11 +108,7 @@ export function addAdditionalFields(
 			}
 		}
 
-		if (
-			nodeVersion &&
-			nodeVersion >= 1.2 &&
-			additionalFields.disable_web_page_preview === undefined
-		) {
+		if (additionalFields.disable_web_page_preview === undefined) {
 			body.disable_web_page_preview = true;
 		}
 

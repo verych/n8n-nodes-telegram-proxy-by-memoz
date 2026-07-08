@@ -26,7 +26,7 @@ export class TelegramProxy implements INodeType {
 		name: 'telegramProxy',
 		icon: 'file:telegram.svg',
 		group: ['output'],
-		version: [1, 1.1, 1.2],
+		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Sends data to Telegram, with support for an HTTP/HTTPS proxy',
 		defaults: {
@@ -2035,7 +2035,6 @@ export class TelegramProxy implements INodeType {
 		const resource = this.getNodeParameter('resource', 0);
 		const binaryData = this.getNodeParameter('binaryData', 0, false);
 
-		const nodeVersion = this.getNode().typeVersion;
 		const instanceId = this.getInstanceId();
 
 		const proxy = (this.getNodeParameter('options', 0, {}) as IDataObject).proxy as
@@ -2266,7 +2265,7 @@ export class TelegramProxy implements INodeType {
 						body.text = this.getNodeParameter('text', i) as string;
 
 						// Add additional fields and replyMarkup
-						addAdditionalFields.call(this, body, i, nodeVersion, instanceId);
+						addAdditionalFields.call(this, body, i, instanceId);
 					} else if (operation === 'sendMediaGroup') {
 						// ----------------------------------
 						//         message:sendMediaGroup

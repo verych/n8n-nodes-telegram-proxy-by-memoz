@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-telegram-proxy-by-memoz",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Telegram node for n8n with an added HTTP proxy option, same as the built-in HTTP Request node",
 	"keywords": [
 		"n8n-community-node-package"
