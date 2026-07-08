@@ -13,6 +13,17 @@ import { apiRequest, getSecretToken } from './GenericFunctions';
 import type { IEvent } from './IEvent';
 import { downloadFile } from './util/triggerUtils';
 
+function applyWebhookDomain(webhookUrl: string, customDomain?: string): string {
+	if (!customDomain) return webhookUrl;
+
+	const url = new URL(webhookUrl);
+	const custom = new URL(customDomain.includes('://') ? customDomain : `https://${customDomain}`);
+	url.protocol = custom.protocol;
+	url.host = custom.host;
+
+	return url.toString();
+}
+
 export class TelegramProxyTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Telegram Trigger (Proxy)',
@@ -192,6 +203,15 @@ export class TelegramProxyTrigger implements INodeType {
 						placeholder: 'e.g. http://myproxy:3128',
 						description: 'HTTP proxy to use for requests to the Telegram Bot API',
 					},
+					{
+						displayName: 'Webhook Domain',
+						name: 'webhookDomain',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g. https://myproxy.example.com:8443',
+						description:
+							'Override the scheme/host/port that Telegram is told to call for this webhook (e.g. a reverse proxy in front of this n8n instance), while keeping the automatically generated webhook path. Leave empty to use the URL n8n computes normally.',
+					},
 				],
 			},
 		],
@@ -201,8 +221,8 @@ export class TelegramProxyTrigger implements INodeType {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
 				const endpoint = 'getWebhookInfo';
-				const proxy = (this.getNodeParameter('additionalFields', {}) as IDataObject)
-					.proxy as string | undefined;
+				const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
+				const proxy = additionalFields.proxy as string | undefined;
 				const webhookReturnData = await apiRequest.call(
 					this,
 					'POST',
@@ -211,7 +231,10 @@ export class TelegramProxyTrigger implements INodeType {
 					undefined,
 					proxy ? { proxy } : undefined,
 				);
-				const webhookUrl = this.getNodeWebhookUrl('default');
+				const webhookUrl = applyWebhookDomain(
+					this.getNodeWebhookUrl('default') as string,
+					additionalFields.webhookDomain as string | undefined,
+				);
 
 				if (webhookReturnData.result.url === webhookUrl) {
 					return true;
@@ -220,7 +243,11 @@ export class TelegramProxyTrigger implements INodeType {
 				return false;
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
-				const webhookUrl = this.getNodeWebhookUrl('default');
+				const additionalFieldsForUrl = this.getNodeParameter('additionalFields', {}) as IDataObject;
+				const webhookUrl = applyWebhookDomain(
+					this.getNodeWebhookUrl('default') as string,
+					additionalFieldsForUrl.webhookDomain as string | undefined,
+				);
 
 				let allowedUpdates = this.getNodeParameter('updates') as string[];
 
@@ -241,9 +268,7 @@ export class TelegramProxyTrigger implements INodeType {
 					drop_pending_updates,
 				};
 
-				const proxy = (this.getNodeParameter('additionalFields', {}) as IDataObject).proxy as
-					| string
-					| undefined;
+				const proxy = additionalFieldsForUrl.proxy as string | undefined;
 
 				await apiRequest.call(this, 'POST', endpoint, body, undefined, proxy ? { proxy } : undefined);
 
