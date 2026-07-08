@@ -1,0 +1,54 @@
+{
+	"name": "n8n-nodes-telegram-proxy-by-memoz",
+	"version": "0.1.0",
+	"description": "Telegram node for n8n with an added HTTP proxy option, same as the built-in HTTP Request node",
+	"keywords": [
+		"n8n-community-node-package"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "memoz"
+	},
+	"homepage": "https://github.com/verych/n8n-nodes-telegram-proxy-by-memoz",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/verych/n8n-nodes-telegram-proxy-by-memoz.git"
+	},
+	"bugs": {
+		"url": "https://github.com/verych/n8n-nodes-telegram-proxy-by-memoz/issues"
+	},
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json && gulp build:icons",
+		"dev": "tsc --watch",
+		"lint": "eslint nodes credentials package.json",
+		"lintfix": "eslint nodes credentials package.json --fix"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/TelegramProxyApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/TelegramProxy/TelegramProxy.node.js",
+			"dist/nodes/TelegramProxy/TelegramProxyTrigger.node.js"
+		]
+	},
+	"dependencies": {
+		"mime-types": "^2.1.35"
+	},
+	"devDependencies": {
+		"@types/mime-types": "^2.1.4",
+		"@types/node": "^20.15.0",
+		"eslint": "^8.57.0",
+		"eslint-plugin-n8n-nodes-base": "^1.16.1",
+		"gulp": "^4.0.2",
+		"typescript": "^5.5.4"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}
